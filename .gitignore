@@ -1,0 +1,9 @@
+.DS_Store
+*.class
+*.zip
+/syntaticTree
+/parser/*.java
+lalala
+GoTwo.iml
+BNF
+*.jj.jj
