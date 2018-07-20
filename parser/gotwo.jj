@@ -1,0 +1,605 @@
+options {
+  DEBUG_LOOKAHEAD = true;
+  STATIC = false;
+}
+
+PARSER_BEGIN(LangGoTwo)
+package parser;
+
+import java.io.*;
+import recovery.*;
+import syntaticTree.*;
+
+public class LangGoTwo {
+  final static String Version = "GoTwo Compiler - Version 0.1 - 2018";
+  private boolean MenosShort = false;
+  private int countParseError = 0;
+  private boolean debug_recovery = false;
+  private boolean eof = false;
+  private Token lastError = null;
+  
+  public static void main(String[] args) {
+    String filename = "";
+    LangGoTwo parser;
+    boolean debug_AS = false;
+    boolean debug_recovery = false;
+
+    System.out.println(Version);
+
+    int i;
+    for (i = 0; i < args.length - 1; i++) {
+      if (args[i].equals("-debug_AS") || args[i].toLowerCase().equals("-d")) {
+        debug_AS = true;
+      }
+      if (args[i].equals("-debug_recovery") || args[i].toLowerCase().equals("-d")) {
+        debug_recovery = true;
+      }
+      else {
+        System.out.println("Uso correto: java LangGoTwo [-debug_AS], [-debug_recovery] ou [-d] inputfile");
+        System.exit(0);
+      }
+    }
+
+    if (args[i].equals('-')) { //entrada padrão
+      System.out.println("Lendo da entrada padrão . . .");
+      parser = new LangGoTwo(System.in);
+    } 
+    else {
+      filename = args[args.length - 1];
+      System.out.println("Lendo do arquivo " + filename + " . . .");
+      try {
+        parser = new LangGoTwo(new java.io.FileInputStream(filename));
+      } 
+      catch (java.io.FileNotFoundException e) {
+        System.out.println("Arquivo " + filename + " não encontrado.");
+        return;
+      }
+    } 
+    if (!debug_AS) parser.disable_tracing();
+    parser.debug_recovery = debug_recovery;
+    try {
+      SimpleNode root = parser.program();
+      root.dump("");
+      //System.out.println("GoTwo analizado com sucesso.");
+    }
+    catch (ParseException e) {
+      System.err.println(e.getMessage());
+      //parser.countParseError = 1; //Não existe recuperação de erros
+    }
+    finally {
+      System.out.println(parser.token_source.foundLexError() + " erro(s) Léxicos encontrados.");
+      System.out.println(parser.countParseError + " erro(s) Sintáticos encontrados.");
+    }
+
+  }
+
+  static public String im(int x) {
+    int k;
+    String s;
+    s = tokenImage[x];
+    k = s.lastIndexOf("\"");
+    try {
+      s = s.substring(1, k);
+    }
+    catch (StringIndexOutOfBoundsException e) { }
+    return s;
+  }
+
+} //LangGoTwo
+
+PARSER_END(LangGoTwo)
+
+JAVACODE
+/**
+ * Função para consumir tokens até um token de sincronização ser encontrado
+ * 
+ */
+
+public void consumeUntil(RecoverySet rs, ParseException e, String met) {  
+  Token tok;
+  if (debug_recovery) {
+    System.out.println();
+    System.out.println("*** " + met + " ***");
+    System.out.println("Sincronizando: " + rs);
+  }
+
+  if (rs == null) throw e;
+
+  tok = getToken(1);
+  while (!eof) {
+    if (rs.contains(tok.kind)) {
+      if (debug_recovery) {
+        System.out.println("Encontrado token de sincronização: " + im(tok.kind));
+      }
+      break;
+    }
+    if (debug_recovery) {
+      System.out.println("Ignorando token: " + im(tok.kind));
+    }
+    getNextToken();
+    tok = getToken(1);
+      // System.out.println("TOK.KIND = " + im(tok.kind));
+    if (tok.kind == EOF && !rs.contains(EOF)) eof = true;
+  }
+
+  if (tok != lastError) {
+    System.out.println(e.getMessage());
+    lastError = tok;
+    countParseError++;
+  }
+  if (eof) {
+    throw new ParseException("EOF encontrado antes do fim do arquivo.");
+  }
+}
+
+SimpleNode program(): { 
+  RecoverySet g = First.program,
+              f1 = new RecoverySet(SEMICOLON);
+}
+{
+  <EOF> {return jjtThis;} |
+  (
+    try {
+      <PACKAGE> <IDENT> <SEMICOLON>
+      [ <IMPORT> importDecl(f1) <SEMICOLON> ]
+      funcList(g) <EOF>  {return jjtThis;}
+    } 
+    catch (ParseException e) {
+      consumeUntil(g, e, "program");
+    }
+  )
+}
+
+void type(RecoverySet g): { }
+{
+  try {
+    (<INT> | <STRING> | <BOOL> | <FLOAT> | <BYTE> | <RUNE>)
+  } 
+  catch(ParseException e) {
+    consumeUntil(g, e, "type");
+  }
+}
+
+void importDecl(RecoverySet g): { 
+  RecoverySet f1 = new RecoverySet(RPAREN),
+              f2 = First.importSpec.union(g);
+}
+{
+  try {
+    ( importSpec(f2) )+ | 
+    <LPAREN> importSpec(f1) <RPAREN>
+  } 
+  catch(ParseException e) {
+    consumeUntil(g, e, "importDecl");
+  }
+}
+
+void importSpec(RecoverySet g): { }
+{
+  try {
+    [ ( <DOT> | <IDENT> ) ] <STRING_LITERAL>
+  }
+  catch(ParseException e) {
+    consumeUntil(g, e, "importSpec");
+  }
+}
+
+void funcList(RecoverySet g): {
+  RecoverySet f = First.funcList.union(g);
+}
+{
+  (
+    funcDecl(f) [ funcList(g) ]
+  )
+}
+
+void funcDecl(RecoverySet g): { }
+{
+  try {
+    <FUNC> <IDENT> funcBody(g)
+  } 
+  catch (ParseException e) {
+    consumeUntil(g, e, "funcDecl");
+  }
+}
+
+void funcBody(RecoverySet g): {
+  RecoverySet f1 = new RecoverySet(RPAREN).union(g), 
+              f2 = First.paramList.union(f1).remove(IDENT),
+              f3 = First.statement.union(g).remove(IDENT);
+}
+{
+  try {
+    <LPAREN> (paramList(f2))* <RPAREN> [ LOOKAHEAD(2) funcReturnBody(f3) ] statement(g)
+  }
+  catch (ParseException e) {
+    consumeUntil(g, e, "funcBody");
+  }
+}
+
+void funcReturnBody(RecoverySet g): {
+  RecoverySet f1 = new RecoverySet(RPAREN).union(g),
+              f2 = First.returnList.union(f1);
+}
+{
+  try {
+    (<LPAREN> (returnList(f2))* <RPAREN>) | 
+    (type(g))
+  }
+  catch (ParseException e) {
+    consumeUntil(g, e, "funcReturnBody");
+  }
+}
+
+void returnList(RecoverySet g): { 
+  RecoverySet f1 = new RecoverySet(COMMA).union(g),
+              f2 = f1.union(g);
+}
+{
+  try {
+    [ <IDENT> ] type(f2) (<COMMA> [ <IDENT> ] type(f2))*
+  }
+  catch (ParseException e) {
+    consumeUntil(g, e, "returnList");
+  }
+}
+
+void paramList(RecoverySet g): { }
+{
+  try {
+    <IDENT> paramLType(g)
+  }
+  catch (ParseException e) {
+    consumeUntil(g, e, "paramList");
+  }
+}
+
+void paramLType(RecoverySet g): { 
+  RecoverySet f = new RecoverySet(COMMA).union(g);
+}
+{
+  try {
+    LOOKAHEAD(2) type(f) (<COMMA> <IDENT> type(f))* | 
+    (<COMMA> <IDENT>)* type(g)
+  }
+  catch (ParseException e) {
+    consumeUntil(g, e, "paramLType");
+  }
+}
+
+void varDecl(RecoverySet g): { }
+{
+  try {
+    <VAR> <IDENT> (<COMMA> <IDENT>)* [type(g)]
+  }
+  catch(ParseException e) {
+    consumeUntil(g, e, "varDecl");
+  }
+}
+
+void constDecl(RecoverySet g): { }
+{
+  try {
+    <CONST> <IDENT> [type(g)]
+  }
+  catch(ParseException e) {
+    consumeUntil(g, e, "constDecl");
+  }
+}
+
+void statement(RecoverySet g): { 
+  RecoverySet f1 = new RecoverySet(SEMICOLON).union(g).remove(IDENT),
+              f2 = new RecoverySet(RBRACE);
+}
+{
+  try {
+    funcDecl(g)
+  | varDecl(f1) <SEMICOLON>
+  | constDecl(f1) <SEMICOLON>
+  | atribStat(f1) <SEMICOLON>
+  | returnStat(f1) <SEMICOLON>
+  | ifStat(g)
+  | forStat(g)
+  | <LBRACE> statList(f2) <RBRACE>
+  | <BREAK> <SEMICOLON>
+  | <SEMICOLON>
+  }
+  catch(ParseException e) {
+    consumeUntil(g, e, "statement");
+  }
+}
+
+void statList(RecoverySet g): { 
+  RecoverySet f = First.statList.union(g);
+}
+{
+  try {
+    [statement(f) statList(g)]
+  }
+  catch(ParseException e) {
+    consumeUntil(g, e, "statList");
+  }
+}
+
+void atribStat(RecoverySet g): { 
+  RecoverySet f1 = new RecoverySet(ASSIGN).union(g),
+              f2 = new RecoverySet(ASSINGTYPED).union(f1);
+}
+{
+  try {
+    lvalue(f2) [(<ASSIGN> | <ASSINGTYPED>) expression(g) ]
+  }
+  catch(ParseException e) {
+    consumeUntil(g, e, "atribStat");
+  }
+}
+
+void returnStat(RecoverySet g): {
+  RecoverySet f1 = new RecoverySet(COMMA).union(g);
+}
+{
+  try {
+    <RETURN> [expression(f1) (<COMMA> expression(f1))*]
+  }
+  catch(ParseException e) {
+    consumeUntil(g, e, "returnStat");
+  }
+}
+
+void ifStat(RecoverySet g): { 
+  RecoverySet f1 = new RecoverySet(RPAREN),
+              f2 = new RecoverySet(ELSE).union(g);
+} 
+{
+  try {
+    <IF> <LPAREN> expression(f1) <RPAREN> statement(f2)
+    [LOOKAHEAD(1) <ELSE> statement(g)]
+  }
+  catch(ParseException e) {
+    consumeUntil(g, e, "ifStat");
+  }
+}
+
+void forStat(RecoverySet g): { 
+  RecoverySet f1 = new RecoverySet(SEMICOLON),
+              f2 = new RecoverySet(RPAREN);
+}
+{
+  try {
+    <FOR> [ <LPAREN>  [atribStat(f1)] <SEMICOLON>
+                      [expression(f1)] <SEMICOLON>
+                      [atribStat(f2)] <RPAREN> ]
+                      statement(g)
+  }
+  catch(ParseException e) {
+    consumeUntil(g, e, "forStat");
+  }
+}
+
+void lvalue(RecoverySet g): { } 
+{
+  try {
+    <IDENT> [<LPAREN> argList(null) <RPAREN>]
+    (
+      <LBRACKET> expression(null) <RBRACKET> | 
+      <DOT> <IDENT> [<LPAREN> argList(null) <RPAREN>]
+    )*
+  }
+  catch(ParseException e) {
+    consumeUntil(g, e, "lvalue");
+  }
+}
+
+void expression(RecoverySet g): { }
+{
+  try {
+    numexpr() [( <LT> | <GT> | <LE> | <GE> | <EQ> | <NEQ> ) numexpr()]
+  }
+  catch(ParseException e) {
+    consumeUntil(g, e, "expression");
+  }
+}
+
+void numexpr(): { }
+{
+  term() (( <PLUS> | <MINUS> ) term())*
+}
+
+void term(): { }
+{
+  unaryexpr() (( <STAR> | <SLASH> | <REM> ) unaryexpr())*
+}
+
+void unaryexpr(): { }
+{
+  [(<PLUS> | <MINUS>)] factor()
+}
+
+void factor(): { }
+{
+  (
+    <INTEGER_LITERAL> |
+    <STRING_LITERAL> |
+    <NULL_LITERAL> |
+    <FLOATING_POINT_LITERAL> |
+    lvalue(null) |
+    <LPAREN> expression(null) <RPAREN>
+  )
+}
+
+void argList(RecoverySet g): { 
+  RecoverySet f = new RecoverySet(COMMA).union(g);
+}
+{
+  [ expression(f) ( <COMMA> expression(f) )* ]
+}
+
+TOKEN_MGR_DECLS:
+{
+  static int countLexErros = 0;
+
+  public int foundLexError() {
+    return countLexErros;
+  }
+}
+
+SKIP:
+{
+  " "
+| "\n"
+| "\t"
+| "\r"
+| "\f"
+}
+
+
+/* Palavras Reservadas */
+
+TOKEN:
+{
+  < BREAK: "break" >
+| < FUNC: "func" >
+| < IF: "if" >
+| < ELSE: "else" >
+| < FOR: "for" >
+| < SWITCH: "switch" >
+| < CASE: "case" >
+| < INT: "int" >
+| < STRING: "string" >
+| < BOOL: "bool" >
+| < BYTE: "byte" >
+| < RUNE: "rune" >
+| < FLOAT: "float" >
+| < RETURN: "return" >
+| < PACKAGE: "package" >
+| < IMPORT: "import" >
+| < VAR: "var" >
+| < CONST: "const" >
+}
+
+/* Operadores */
+
+TOKEN:
+{
+  < ASSIGN: "=" >
+| < ASSINGTYPED: ":=" >
+| < GT: ">" >
+| < LT: "<" >
+| < EQ: "==" >
+| < LE: "<=" >
+| < GE: ">=" >
+| < NEQ: "!=" >
+| < PLUS: "+" >
+| < MINUS: "-" >
+| < STAR: "*" >
+| < SLASH: "/" >
+| < REM: "%" >
+}
+
+/* Simbolos Especiais */
+
+TOKEN:
+{
+  < LPAREN: "(" >
+| < RPAREN: ")" >
+| < LBRACE: "{" >
+| < RBRACE: "}" >
+| < LBRACKET: "[" >
+| < RBRACKET: "]" >
+| < SEMICOLON: ";" >
+| < COMMA: "," >
+| < DOT: "." >
+}
+
+/* Constantes */
+
+TOKEN: 
+{
+  < INTEGER_LITERAL: ( (["0"-"9"] (["0"-"9"])* ) ) >
+| < STRING_LITERAL: "\""( ~["\"","\n","\r"])* "\"" >
+| < NULL_LITERAL: "nil" >
+| < FLOATING_POINT_LITERAL:
+        (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])?
+      | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])?
+      | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])?
+      | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]
+  >
+| < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+}
+
+/* Identificadores */
+
+TOKEN:
+{
+  < IDENT: (<LETTER>) (<LETTER>|<DIGIT>|"_")* >
+//| < RTYPES: <INT> | <STRING> | <BOOL> | <FLOAT> | <BYTE> | <RUNE> >
+| < #LETTER: ( <LOWERLETTER> | <UPPERLETTER> ) >
+| < #LOWERLETTER: ["a"-"z"] >
+| < #UPPERLETTER: ["A"-"Z"] >
+| < #DIGIT: ["0"-"9"] >
+}
+
+SKIP: 
+{
+  "/*": multicomment
+| "//": singlecomment
+}
+
+<multicomment> SKIP:
+{
+  "*/": DEFAULT
+| <~[]>
+}
+
+<singlecomment> SKIP:
+{
+  <["\n","\r"]>: DEFAULT
+| <~[]>
+}
+
+/* TRATAMENTO DE ERROS LÉXICOS */
+
+SPECIAL_TOKEN:
+{
+  <INVALID_LEXICAL:
+  (~ [
+    "A"-"Z","a"-"z",
+    "0"-"9",
+    "\"",
+    "(",
+    ")",
+    "[",
+    "]",
+    "{",
+    "}",
+    ";",
+    ",",
+    ".",
+    "=",
+    ">",
+    "<",
+    "!",
+    "+",
+    "-",
+    "*",
+    "/",
+    "%",
+    " ",
+    "\t",
+    "\n",
+    "\r",
+    "\f"
+  ] )+ >
+  {
+    System.err.println("Linha " + input_stream.getEndLine() + 
+                        " - String inválida encontrada: " + image);
+    countLexErros++;
+  }
+
+|   <INVALID_CONST: "\"" ( ~["\n", "\r", "\""] )* ["\n", "\r"] >
+  {
+    System.err.println("Linha " + input_stream.getEndLine() + 
+                        " - Constante String tem um \\n: " + image);
+    countLexErros++;
+  }
+}
