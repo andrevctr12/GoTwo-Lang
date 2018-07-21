@@ -13,7 +13,7 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 
 ## Expressões Regulares
 
-```EBNF
+```ebnf
 //Aceita uma cadeia para representar um inteiro de um ou mais dígitos
 <INTEGER_LITERAL>: (<DIGIT>)+
 
@@ -49,6 +49,86 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 <DIGIT>: ["0"-"9"]
 ```
 
+## Gramática
+
+```ebnf
+<program> = 'package', <identifier>, ";", 
+          ['import', <importDecl>, ";"],
+          <functionList>, EOF;
+
+
+<importDecl> = ( [( "." | <identifier> )] <STRING_LITERAL> )+ 
+| "(", [( "." | <identifier> )], <STRING_LITERAL>, ")", ";"] ;
+
+<funcList> = (<funcDecl>, [<funcList>]) ;
+
+<funcDecl> = 'func', <identifier>, <funcBody> ;
+
+<funcBody> = "(", (<paramList>)*, ")", 
+            [ LOOKAHEAD(2) <funcReturnBody> ] <statement> ;
+
+<funcReturnBody> =  ("(", (<returnList>)* ")" 
+|   <type>) ;
+
+<returnList> = [ <identifier> ] <type> ("," [ <identifier> ] <type>)* ;
+
+<paramList> = <identifier>, <paramLType> ;
+
+<paramLType> = LOOKAHEAD(2), <type>, (",", <identifier>, <type>)*
+|   (",", <identifier>)* <type> ;
+
+<varDecl> = 'var', <identifier>, (",", <identifier>)*, [<type>] ;
+
+<constDecl> = 'const', <identifier>, [<type>] ;
+
+statList = [<statement>, statList] ;
+
+<atribStat> = lvalue, [("=" | ":="), <expression>] ;
+
+<returnStat> = 'return', [<expression>, (",", <expression>)*] ;
+
+<ifStat> = 'if', '(', <expression>, ")", <statement>, [LOOKAHEAD(1), 'else', <statement>] ;
+
+<forStat> = 'for' [ "(", [<atribStat>], ";"
+                      [<expression>], ";"
+                      [<atribStat>], ")" ]
+                <statement> ;
+            
+lvalue = <identifier>, ["(", <argList>], ")"], 
+         ("[", <expression>, "]" 
+|        ".", <identifier>, ["(", <argList>, ")"]) ;
+
+<expression> = <numexpr>, [(<comparison>) <numexpr>] ;
+
+<numexpr> = <term>, (("+" | "-"), <term>)* ;
+
+<term> = <unaryexpr>, (( "*" | "/" | "%"), <unaryexpr>)* ;
+
+<unaryexpr> = [("+" | "-")], <factor> ;
+
+<factor> = <INTEGER_LITERAL> | <STRING_LITERAL> | 
+           <NULL_LITERAL> | float | lvalue | "(", <expression>, ")" ;
+
+<argList> = [<expression> (",", <expression>)*] ;
+
+<comparison> = ">" | "<" | "==" | "<=" | ">=" | "!=" ;
+
+<statement> = <funcDecl>
+  | <varDecl>, ";"
+  | <constDecl>, ";"
+  | <atribStat>, ";"
+  | <returnStat>, ";"
+  | <ifStat>
+  | <forStat>
+  | <LBRACE> statList(f2) <RBRACE>
+  | <BREAK>, ";"
+  | ";" ;
+
+null = "nil" ;
+
+<type> = "int" | <STRING_LITERAL> | "bool" | "float" | "byte" | "rune" ;
+```
+
 ## Requisitos
 
 Os requisitos e versões destes mostrados aqui são os utilizados no 
@@ -63,9 +143,9 @@ ou antiga funcione, mas recomenda-se utilizar as versões especificadas aqui
 
 ## A fazer
 
-- [ ] Gramática da linguagem em EBNF
+- [x] Gramática da linguagem em EBNF
 - [x] Código comentado javacc para o compilador da linguagem
-    - [ ] Gera árvore sintática e mostra no terminal
+    - [x] Gera árvore sintática e mostra no terminal
     - [x] Tratamento de erros léxicos e sintáticos
 - [ ] Arquivo de informações da linguagem
     - [x] Nome do software
