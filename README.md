@@ -13,7 +13,7 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 
 ## Expressões Regulares
 
-```ebnf
+```java
 //Aceita uma cadeia para representar um inteiro de um ou mais dígitos
 <INTEGER_LITERAL>: (<DIGIT>)+
 
@@ -51,7 +51,9 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 
 ## Gramática
 
-```ebnf
+```java
+<identifier> = <IDENT> ;
+
 <program> = 'package', <identifier>, ";", 
           ['import', <importDecl>, ";"],
           <functionList>, EOF;
@@ -65,7 +67,7 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 <funcDecl> = 'func', <identifier>, <funcBody> ;
 
 <funcBody> = "(", (<paramList>)*, ")", 
-            [ LOOKAHEAD(2) <funcReturnBody> ] <statement> ;
+            [ <funcReturnBody> ] <statement> ;
 
 <funcReturnBody> =  ("(", (<returnList>)* ")" 
 |   <type>) ;
@@ -74,29 +76,29 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 
 <paramList> = <identifier>, <paramLType> ;
 
-<paramLType> = LOOKAHEAD(2), <type>, (",", <identifier>, <type>)*
+<paramLType> = <type>, (",", <identifier>, <type>)*
 |   (",", <identifier>)* <type> ;
 
 <varDecl> = 'var', <identifier>, (",", <identifier>)*, [<type>] ;
 
 <constDecl> = 'const', <identifier>, [<type>] ;
 
-statList = [<statement>, statList] ;
+<statList> = [<statement>, <statList>] ;
 
-<atribStat> = lvalue, [("=" | ":="), <expression>] ;
+<atribStat> = <lvalue>, [("=" | ":="), <expression>] ;
 
 <returnStat> = 'return', [<expression>, (",", <expression>)*] ;
 
-<ifStat> = 'if', '(', <expression>, ")", <statement>, [LOOKAHEAD(1), 'else', <statement>] ;
+<ifStat> = 'if', '(', <expression>, ")", <statement>, ['else', <statement>] ;
 
-<forStat> = 'for' [ "(", [<atribStat>], ";"
-                      [<expression>], ";"
-                      [<atribStat>], ")" ]
-                <statement> ;
+<forStat> = 'for', [ "(", [<atribStat>], ";",
+                      [<expression>], ";",
+                      [<atribStat>], ")" ],
+                      <statement> ;
             
-lvalue = <identifier>, ["(", <argList>], ")"], 
-         ("[", <expression>, "]" 
-|        ".", <identifier>, ["(", <argList>, ")"]) ;
+<lvalue> = <identifier>, ["(", <argList>], ")"], 
+          ("[", <expression>, "]" 
+|         ".", <identifier>, ["(", <argList>, ")"]) ;
 
 <expression> = <numexpr>, [(<comparison>) <numexpr>] ;
 
@@ -107,7 +109,7 @@ lvalue = <identifier>, ["(", <argList>], ")"],
 <unaryexpr> = [("+" | "-")], <factor> ;
 
 <factor> = <INTEGER_LITERAL> | <STRING_LITERAL> | 
-           <NULL_LITERAL> | float | lvalue | "(", <expression>, ")" ;
+           <NULL_LITERAL> | <FLOATING_POINT_LITERAL> | <lvalue> | "(", <expression>, ")" ;
 
 <argList> = [<expression> (",", <expression>)*] ;
 
@@ -120,11 +122,9 @@ lvalue = <identifier>, ["(", <argList>], ")"],
   | <returnStat>, ";"
   | <ifStat>
   | <forStat>
-  | <LBRACE> statList(f2) <RBRACE>
+  | <LBRACE> <statList>(f2) <RBRACE>
   | <BREAK>, ";"
   | ";" ;
-
-null = "nil" ;
 
 <type> = "int" | <STRING_LITERAL> | "bool" | "float" | "byte" | "rune" ;
 ```
