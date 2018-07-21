@@ -140,13 +140,24 @@ ou antiga funcione, mas recomenda-se utilizar as versões especificadas aqui
 
 ## Tratamento de Erros
 
-Os erros sintáticos são tratados pelo método de pânico, com algumas melhorias, foram usados tokens de sincronização e os conjuntos de Primeiros, assim como analise de quais os melhores tokens de sincronização para cada caso expecifico. São mostradas mensagens para que o usuário possa identificar quais erros está cometendo durante o processo de construção de seu código.
-Os erros léxicos são mostrados para o usuário, tanto como tokens que não fazem parte de nenhuma ER ou constantes literais com tokens não aceitos no meio.
+Os erros sintáticos são tratados pelo método de pânico, com algumas melhorias,
+foram usados tokens de sincronização e os conjuntos de Primeiros, assim como 
+analise de quais os melhores tokens de sincronização para cada caso expecifico.
+São mostradas mensagens para que o usuário possa identificar quais erros está
+cometendo durante o processo de construção de seu código.
+Os erros léxicos são mostrados para o usuário, tanto como tokens que não fazem
+parte de nenhuma ER ou constantes literais com tokens não aceitos no meio.
 Para ambos é mostrado a quantidade de erros no final da execução do parser.
 
 ## Funcionamento do Programa
 
-O programa utiliza das ferramentas do Javacc (Gerador de Parser e Analisador Léxico) para fazer as analises léxica e sintática, no programa é definido um método principal que faz o requerimento das entradas e das tags de debug, assim como chama o analisador léxico e sintático, a entrada é analisada por meio de métodos recursivos, usando uma perspectiva de analise top-down e uma gramática marjoritariamente LL(1).
+O programa utiliza das ferramentas do Javacc (Gerador de Parser e Analisador
+Léxico) para gerar os analisadores léxicos e sintáticos. No programa é definido
+um método principal que faz o requerimento das entradas e das tags de depuração,
+assim como chama o analisador léxico e sintático gerados, a entrada, que pode
+ser feita a partir de arquivo ou da entrada padrão é analisada por meio de
+métodos recursivos, usando uma perspectiva de analise top-down e uma 
+gramática marjoritariamente LL(1).
 
 ## A fazer
 
@@ -154,13 +165,13 @@ O programa utiliza das ferramentas do Javacc (Gerador de Parser e Analisador Lé
 - [x] Código comentado javacc para o compilador da linguagem
     - [x] Gera árvore sintática e mostra no terminal
     - [x] Tratamento de erros léxicos e sintáticos
-- [ ] Arquivo de informações da linguagem
+- [x] Arquivo de informações da linguagem
     - [x] Nome do software
     - [x] Nome dos integrantes do grupo
     - [x] Descrição da linguagem
     - [x] Descrições das expressões para reconhecimento de tokens
     - [x] Descrição da gramática
-    - [ ] Descrição do programa que faz análise léxica e sintática
+    - [x] Descrição do programa que faz análise léxica e sintática
     - [x] Descrição da estratégia de tratamento de erros e tipos de erros
 - [x] Exemplo de código fonte correto
 - [x] Exemplo de código fonte incorreto
