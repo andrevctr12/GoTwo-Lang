@@ -11,6 +11,43 @@ completa.
 
 Por: André Victor, Bruno Brezolin e Melissa Wong
 
+## Expressões Regulares
+
+```
+//Aceita uma cadeia para representar um inteiro de um ou mais dígitos
+<INTEGER_LITERAL>: (<DIGIT>)+
+
+//Aceita uma cadeia que comece com ", porém a cadeia entre o início e o final não deve conter ", \n ou \r
+<STRING_LITERAL>: "\"" ( ~["\"","\n","\r"])* "\""
+
+//Nulo
+<NULL_LITERAL>: "nil"
+
+//Aceita diversas representações de ponto flutuante, incluindo com expoente
+<FLOATING_POINT_LITERAL>:
+    (<DIGIT>)+ "." (<DIGIT>)* (<EXPONENT>)? (["f","F","d","D"])?  
+    |   "." (<DIGIT>)+ (<EXPONENT>)? (["f","F","d","D"])?  
+    |   (<DIGIT>)+ <EXPONENT> (["f","F","d","D"])?  
+    |   (<DIGIT>)+ (<EXPONENT>)? ["f","F","d","D"] 
+
+//Aceita um expoente positivo ou negativo de um ou mais dígitos 
+<EXPONENT>: ["e","E"] (["+","-"])? (<DIGIT>)+
+
+//Aceita uma cadeia para representar uma variável, deve ser iniciada com uma letra e então seguida por uma ou mais letras, dígitos ou '_'
+<IDENT>: (<LETTER>) (<LETTER>|<DIGIT>|"_")*
+
+//Aceita uma letra minúscula ou maiúscula
+<LETTER>: ( <LOWERLETTER> | <UPPERLETTER> ) >
+
+//Aceita uma letra minúscula entre 'a' e 'z'
+<LOWERLETTER>: ["a"-"z"]
+
+//Aceita uma letra maiúscula entre 'A' e 'Z'
+<UPPERLETTER>: ["A"-"Z"]
+
+//Aceita um dígito entre '0' e '9'
+<DIGIT>: ["0"-"9"]
+```
 ## A fazer
 
 - [ ] Gramática da linguagem em EBNF
@@ -21,7 +58,7 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
     - [x] Nome do software
     - [x] Nome dos integrantes do grupo
     - [X] Descrição da linguagem
-    - [ ] Descrições das expressões para reconhecimento de tokens
+    - [x] Descrições das expressões para reconhecimento de tokens
     - [ ] Descrição da gramática
     - [ ] Descrição do programa que faz análise léxica e sintática
     - [ ] Descrição da estratégia de tratamento de erros e tipos de erros
