@@ -16,7 +16,7 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 - [ ] Gramática da linguagem em EBNF
 - [x] Código comentado javacc para o compilador da linguagem
     - [ ] Gera árvore sintática e mostra no terminal
-    - [ ] Tratamento de erros léxicos e sintáticos
+    - [x] Tratamento de erros léxicos e sintáticos
 - [ ] Arquivo de informações da linguagem
     - [x] Nome do software
     - [x] Nome dos integrantes do grupo
