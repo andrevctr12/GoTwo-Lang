@@ -144,6 +144,10 @@ Os erros sintáticos são tratados pelo método de pânico, com algumas melhoria
 Os erros léxicos são mostrados para o usuário, tanto como tokens que não fazem parte de nenhuma ER ou constantes literais com tokens não aceitos no meio.
 Para ambos é mostrado a quantidade de erros no final da execução do parser.
 
+## Funcionamento do Programa
+
+O programa utiliza das ferramentas do Javacc (Gerador de Parser e Analisador Léxico) para fazer as analises léxica e sintática, no programa é definido um método principal que faz o requerimento das entradas e das tags de debug, assim como chama o analisador léxico e sintático, a entrada é analisada por meio de métodos recursivos, usando uma perspectiva de analise top-down e uma gramática marjoritariamente LL(1).
+
 ## A fazer
 
 - [x] Gramática da linguagem em EBNF
@@ -157,6 +161,6 @@ Para ambos é mostrado a quantidade de erros no final da execução do parser.
     - [x] Descrições das expressões para reconhecimento de tokens
     - [x] Descrição da gramática
     - [ ] Descrição do programa que faz análise léxica e sintática
-    - [ ] Descrição da estratégia de tratamento de erros e tipos de erros
+    - [x] Descrição da estratégia de tratamento de erros e tipos de erros
 - [x] Exemplo de código fonte correto
 - [x] Exemplo de código fonte incorreto

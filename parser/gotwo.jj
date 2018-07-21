@@ -815,7 +815,7 @@ SPECIAL_TOKEN:
     "\f"
   ] )+ >
   {
-    System.out.println("Erro Léxico: ")
+    System.out.println("Erro Léxico: ");
     System.out.println("linha " + input_stream.getEndLine() + ", coluna " + input_stream.getEndColumn() +
                         " - Token inválido encontrado: " + image);
     countLexErros++;
@@ -823,7 +823,7 @@ SPECIAL_TOKEN:
 
 |   <INVALID_CONST: "\"" ( ~["\n", "\r", "\""] )* ["\n", "\r"] >
   {
-    System.out.println("Erro Léxico: ")
+    System.out.println("Erro Léxico: ");
     System.out.println("linha " + input_stream.getEndLine() + ", coluna " + input_stream.getEndColumn() +
                         " - Constante String tem um \\n: " + image);
     countLexErros++;

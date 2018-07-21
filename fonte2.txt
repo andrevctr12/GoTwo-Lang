@@ -1,13 +1,13 @@
-package melissa
+package melissa;
 
-import ccs
+import ccs;
 
 func soma(int a, int b) int {
-	return a + b;
+	retur#n a + b;
 }
 
 func main() {
 	int a
-	b = 10;
+	b = @10;
 	ccs.println(soma(a, b);
 }
