@@ -19,7 +19,7 @@ Por: André Lopes, Bruno Brezolin e Melissa Wong
 $ cd parser/
 $ jjtree gotwo.jj
 $ javacc gotwo.jj.jj
-#Volte para a pasta do projeto e compile com JavaC
+# Volte para a pasta do projeto e compile com JavaC
 $ cd ..   
 $ javac parser/LangGoTwo.java
 # Entre com o codigo da GoTwo Lang
