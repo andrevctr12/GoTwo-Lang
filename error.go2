@@ -1,0 +1,13 @@
+package melissa
+
+import ccs
+
+func soma(int a, int b) int {
+	return a + b;
+}
+
+func main() {
+	int a
+	b = 10;
+	ccs.println(soma(a, b);
+}
