@@ -48,6 +48,19 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 //Aceita um dígito entre '0' e '9'
 <DIGIT>: ["0"-"9"]
 ```
+
+## Requisitos
+
+Os requisitos e versões destes mostrados aqui são os utilizados no 
+desenvolvimento deste projeto. Pode ocorrer o caso de que uma versão mais nova
+ou antiga funcione, mas recomenda-se utilizar as versões especificadas aqui
+
+| Requisito | Versão |
+|-----------|--------|
+| Java - JRE| 1.8    |
+| Java - JDK| 1.8    |
+| javacc    | 6.0    |
+
 ## A fazer
 
 - [ ] Gramática da linguagem em EBNF
