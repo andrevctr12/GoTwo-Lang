@@ -13,7 +13,7 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 
 ## Expressões Regulares
 
-```
+```EBNF
 //Aceita uma cadeia para representar um inteiro de um ou mais dígitos
 <INTEGER_LITERAL>: (<DIGIT>)+
 
