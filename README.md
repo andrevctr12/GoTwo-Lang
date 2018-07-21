@@ -155,5 +155,5 @@ ou antiga funcione, mas recomenda-se utilizar as versões especificadas aqui
     - [x] Descrição da gramática
     - [ ] Descrição do programa que faz análise léxica e sintática
     - [ ] Descrição da estratégia de tratamento de erros e tipos de erros
-- [ ] Exemplo de código fonte correto
-- [ ] Exemplo de código fonte incorreto
+- [x] Exemplo de código fonte correto
+- [x] Exemplo de código fonte incorreto
