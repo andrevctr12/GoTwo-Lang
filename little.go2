@@ -1,0 +1,7 @@
+package main;
+import "minha_mae";
+
+func main() {
+  aiai = 22.4;
+  minha_mae.print("oi");
+}

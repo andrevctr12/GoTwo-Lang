@@ -15,6 +15,9 @@ public class First {
   static public final RecoverySet returnList = new RecoverySet();
   static public final RecoverySet type = new RecoverySet();
   static public final RecoverySet importSpec = new RecoverySet();
+  static public final RecoverySet expression = new RecoverySet();
+  static public final RecoverySet funcBody = new RecoverySet();
+  static public final RecoverySet paramLType = new RecoverySet();
 
 
   static {
@@ -60,6 +63,20 @@ public class First {
     importSpec.add(new Integer(LangGoTwoConstants.IDENT));
     importSpec.add(new Integer(LangGoTwoConstants.DOT));
     importSpec.add(new Integer(LangGoTwoConstants.STRING_LITERAL));
+
+    expression.add(new Integer(LangGoTwoConstants.PLUS));
+    expression.add(new Integer(LangGoTwoConstants.MINUS));
+    expression.add(new Integer(LangGoTwoConstants.INTEGER_LITERAL));
+    expression.add(new Integer(LangGoTwoConstants.STRING_LITERAL));
+    expression.add(new Integer(LangGoTwoConstants.NULL_LITERAL));
+    expression.add(new Integer(LangGoTwoConstants.FLOATING_POINT_LITERAL));
+    expression.add(new Integer(LangGoTwoConstants.LPAREN));
+    expression.add(new Integer(LangGoTwoConstants.IDENT));
+
+    funcBody.add(new Integer(LangGoTwoConstants.LPAREN));
+
+    paramLType.addAll(type);
+    paramLType.add(new Integer(LangGoTwoConstants.COMMA));
 
   }
 }

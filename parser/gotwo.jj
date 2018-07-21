@@ -1,6 +1,7 @@
 options {
   DEBUG_LOOKAHEAD = true;
   STATIC = false;
+  NODE_CLASS = "NotSoSimpleNode";
 }
 
 PARSER_BEGIN(LangGoTwo)
@@ -8,7 +9,6 @@ package parser;
 
 import java.io.*;
 import recovery.*;
-import syntaticTree.*;
 
 public class LangGoTwo {
   final static String Version = "GoTwo Compiler - Version 0.1 - 2018";
@@ -58,7 +58,7 @@ public class LangGoTwo {
     if (!debug_AS) parser.disable_tracing();
     parser.debug_recovery = debug_recovery;
     try {
-      SimpleNode root = parser.program();
+      NotSoSimpleNode root = parser.program();
       root.dump("");
       //System.out.println("GoTwo analizado com sucesso.");
     }
@@ -95,7 +95,7 @@ JAVACODE
  * 
  */
 
-public void consumeUntil(RecoverySet rs, ParseException e, String met) {  
+public void consumeUntil(RecoverySet rs, ParseException e, String met) #void {  
   Token tok;
   if (debug_recovery) {
     System.out.println();
@@ -132,7 +132,7 @@ public void consumeUntil(RecoverySet rs, ParseException e, String met) {
   }
 }
 
-SimpleNode program(): { 
+NotSoSimpleNode program(): { 
   RecoverySet g = First.program,
               f1 = new RecoverySet(SEMICOLON);
 }
@@ -140,7 +140,7 @@ SimpleNode program(): {
   <EOF> {return jjtThis;} |
   (
     try {
-      <PACKAGE> <IDENT> <SEMICOLON>
+      <PACKAGE> ident(f1) <SEMICOLON>
       [ <IMPORT> importDecl(f1) <SEMICOLON> ]
       funcList(g) <EOF>  {return jjtThis;}
     } 
@@ -150,10 +150,11 @@ SimpleNode program(): {
   )
 }
 
-void type(RecoverySet g): { }
+void type(RecoverySet g): { Token t; }
 {
   try {
-    (<INT> | <STRING> | <BOOL> | <FLOAT> | <BYTE> | <RUNE>)
+    (t = <INT> | t = <STRING> | t = <BOOL> | t = <FLOAT> | t = <BYTE> | t = <RUNE>)
+    { jjtThis.value = t.image; }
   } 
   catch(ParseException e) {
     consumeUntil(g, e, "type");
@@ -174,10 +175,13 @@ void importDecl(RecoverySet g): {
   }
 }
 
-void importSpec(RecoverySet g): { }
+void importSpec(RecoverySet g): { Token t; 
+  RecoverySet f = new RecoverySet(STRING_LITERAL);
+}
 {
   try {
-    [ ( <DOT> | <IDENT> ) ] <STRING_LITERAL>
+    [ ( <DOT> | ident(f) ) ] t = <STRING_LITERAL>
+    { jjtThis.value = t.image; }
   }
   catch(ParseException e) {
     consumeUntil(g, e, "importSpec");
@@ -193,10 +197,12 @@ void funcList(RecoverySet g): {
   )
 }
 
-void funcDecl(RecoverySet g): { }
+void funcDecl(RecoverySet g): { 
+  RecoverySet f = First.funcBody;
+}
 {
   try {
-    <FUNC> <IDENT> funcBody(g)
+    <FUNC> ident(f) funcBody(g)
   } 
   catch (ParseException e) {
     consumeUntil(g, e, "funcDecl");
@@ -233,21 +239,23 @@ void funcReturnBody(RecoverySet g): {
 
 void returnList(RecoverySet g): { 
   RecoverySet f1 = new RecoverySet(COMMA).union(g),
-              f2 = f1.union(g);
+              f2 = First.type.union(f1);
 }
 {
   try {
-    [ <IDENT> ] type(f2) (<COMMA> [ <IDENT> ] type(f2))*
+    [ ident(f2) ] type(f1) (<COMMA> [ ident(f2) ] type(f1))*
   }
   catch (ParseException e) {
     consumeUntil(g, e, "returnList");
   }
 }
 
-void paramList(RecoverySet g): { }
+void paramList(RecoverySet g): { 
+  RecoverySet f = First.paramLType;
+}
 {
   try {
-    <IDENT> paramLType(g)
+    ident(f) paramLType(g)
   }
   catch (ParseException e) {
     consumeUntil(g, e, "paramList");
@@ -255,32 +263,38 @@ void paramList(RecoverySet g): { }
 }
 
 void paramLType(RecoverySet g): { 
-  RecoverySet f = new RecoverySet(COMMA).union(g);
+  RecoverySet f = new RecoverySet(COMMA).union(g),
+              f1 = First.type.union(f);
 }
 {
   try {
-    LOOKAHEAD(2) type(f) (<COMMA> <IDENT> type(f))* | 
-    (<COMMA> <IDENT>)* type(g)
+    LOOKAHEAD(2) type(f) (<COMMA> ident(f1) type(f))* | 
+    (<COMMA> ident(f1))* type(g)
   }
   catch (ParseException e) {
     consumeUntil(g, e, "paramLType");
   }
 }
 
-void varDecl(RecoverySet g): { }
+void varDecl(RecoverySet g): { 
+  RecoverySet f = new RecoverySet(COMMA).union(g),
+              f1 = First.type.union(f);
+}
 {
   try {
-    <VAR> <IDENT> (<COMMA> <IDENT>)* [type(g)]
+    <VAR> ident(f1) (<COMMA> ident(f1))* [type(g)]
   }
   catch(ParseException e) {
     consumeUntil(g, e, "varDecl");
   }
 }
 
-void constDecl(RecoverySet g): { }
+void constDecl(RecoverySet g): { 
+  RecoverySet f1 = First.type.union(g);
+}
 {
   try {
-    <CONST> <IDENT> [type(g)]
+    <CONST> ident(f1) [type(g)]
   }
   catch(ParseException e) {
     consumeUntil(g, e, "constDecl");
@@ -323,14 +337,26 @@ void statList(RecoverySet g): {
 
 void atribStat(RecoverySet g): { 
   RecoverySet f1 = new RecoverySet(ASSIGN).union(g),
-              f2 = new RecoverySet(ASSINGTYPED).union(f1);
+              f2 = new RecoverySet(ASSINGTYPED).union(f1),
+              f3 = First.expression.union(g).remove(IDENT);
 }
 {
   try {
-    lvalue(f2) [(<ASSIGN> | <ASSINGTYPED>) expression(g) ]
+    lvalue(f2) [assignValue(f3) expression(g) ]
   }
   catch(ParseException e) {
     consumeUntil(g, e, "atribStat");
+  }
+}
+
+void assignValue(RecoverySet g): { Token t; }
+{
+  try {
+    (t = <ASSIGN> | t = <ASSINGTYPED>)
+    { jjtThis.value = t.image; }
+  }
+  catch (ParseException e) {
+    consumeUntil(g, e, "assignValue");
   }
 }
 
@@ -379,10 +405,10 @@ void forStat(RecoverySet g): {
 void lvalue(RecoverySet g): { } 
 {
   try {
-    <IDENT> [<LPAREN> argList(null) <RPAREN>]
+    ident(null) [<LPAREN> argList(null) <RPAREN>]
     (
       <LBRACKET> expression(null) <RBRACKET> | 
-      <DOT> <IDENT> [<LPAREN> argList(null) <RPAREN>]
+      <DOT> ident(null) [<LPAREN> argList(null) <RPAREN>]
     )*
   }
   catch(ParseException e) {
@@ -393,11 +419,17 @@ void lvalue(RecoverySet g): { }
 void expression(RecoverySet g): { }
 {
   try {
-    numexpr() [( <LT> | <GT> | <LE> | <GE> | <EQ> | <NEQ> ) numexpr()]
+    numexpr() [ operator() numexpr()]
   }
   catch(ParseException e) {
     consumeUntil(g, e, "expression");
   }
+}
+
+void operator(): { Token t; }
+{
+  ( t = <LT> | t = <GT> | t = <LE> | t = <GE> | t = <EQ> | t = <NEQ> )
+  { jjtThis.value = t.image; }
 }
 
 void numexpr(): { }
@@ -415,16 +447,17 @@ void unaryexpr(): { }
   [(<PLUS> | <MINUS>)] factor()
 }
 
-void factor(): { }
+void factor(): { Token t = null; }
 {
   (
-    <INTEGER_LITERAL> |
-    <STRING_LITERAL> |
-    <NULL_LITERAL> |
-    <FLOATING_POINT_LITERAL> |
+    t = <INTEGER_LITERAL> |
+    t = <STRING_LITERAL> |
+    t = <NULL_LITERAL> |
+    t = <FLOATING_POINT_LITERAL> |
     lvalue(null) |
     <LPAREN> expression(null) <RPAREN>
   )
+  { if (t != null) jjtThis.value = t.image; }
 }
 
 void argList(RecoverySet g): { 
@@ -433,6 +466,17 @@ void argList(RecoverySet g): {
 {
   [ expression(f) ( <COMMA> expression(f) )* ]
 }
+
+void ident(RecoverySet g): { Token t; }
+{
+  try {
+    t = <IDENT> { jjtThis.value = t.image; }
+  }
+  catch (ParseException e) {
+    consumeUntil(g, e, "ident");
+  }
+}
+
 
 TOKEN_MGR_DECLS:
 {
