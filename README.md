@@ -23,7 +23,7 @@ $ javacc gotwo.jj.jj
 $ cd ..   
 $ javac parser/LangGoTwo.java
 # Entre com o codigo da GoTwo Lang
-$ java parser/example.go2
+$ java parser/LangGoTwo [-d] [-debug_recovery] [-debug_AS] example.go2
 ```
 
 ## Expressões Regulares
