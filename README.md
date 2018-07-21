@@ -9,7 +9,7 @@ A linguagem GoTwo é uma simplificação da linguagem Go, contando com uma
 sintaxe parecida, porém com a falta de algumas características da linguagem
 completa.
 
-Por: André Victor, Bruno Brezolin e Melissa Wong
+Por: André Lopes, Bruno Brezolin e Melissa Wong
 
 ## Expressões Regulares
 
@@ -56,10 +56,9 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
           ['import', <importDecl>, ';'],
           <functionList>, EOF;
 
-<importDecl> = (importSpec)+ 
-|  "(", importSpec, ")" ;
+<importDecl>  (<importSpec>)+ | '(' <importSpec> ')'
 
-<importSpec> = [ ( "." | <IDENT> ) ], <STRING_LITERAL>
+<importSpec> = [ ( "." | <IDENT> ) ] , <STRING_LITERAL>
 
 <funcList> = (<funcDecl>, [<funcList>]) ;
 
@@ -68,8 +67,7 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 <funcBody> = '(', (<paramList>)*, ')', 
             [ <funcReturnBody> ] <statement> ;
 
-<funcReturnBody> =  ('(', (<returnList>)* ')' 
-|   <type>) ;
+<funcReturnBody> =  ('(', (<returnList>)* ')' | <type>) ;
 
 <returnList> = [ <IDENT> ] <type> (',' [ <IDENT> ] <type>)* ;
 
@@ -94,10 +92,9 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
                       [<expression>], ';',
                       [<atribStat>], ')' ],
                       <statement> ;
-
-<lvalue> = <IDENT>, ['(', <argList>], ')'], 
-          ('[', <expression>, ']' 
-|         '.', <IDENT>, ['(', <argList>, ')']) ;
+            
+<lvalue> = <identifier>, ['(', <argList>], ')'], ('[', <expression>, ']' |
+          '.', <identifier>, ['(', <argList>, ')']) ;
 
 <expression> = <numexpr>, [(<comparison>) <numexpr>] ;
 
@@ -140,6 +137,12 @@ ou antiga funcione, mas recomenda-se utilizar as versões especificadas aqui
 | Java - JRE| 1.8    |
 | Java - JDK| 1.8    |
 | javacc    | 6.0    |
+
+## Tratamento de Erros
+
+Os erros sintáticos são tratados pelo método de pânico, com algumas melhorias, foram usados tokens de sincronização e os conjuntos de Primeiros, assim como analise de quais os melhores tokens de sincronização para cada caso expecifico. São mostradas mensagens para que o usuário possa identificar quais erros está cometendo durante o processo de construção de seu código.
+Os erros léxicos são mostrados para o usuário, tanto como tokens que não fazem parte de nenhuma ER ou constantes literais com tokens não aceitos no meio.
+Para ambos é mostrado a quantidade de erros no final da execução do parser.
 
 ## A fazer
 

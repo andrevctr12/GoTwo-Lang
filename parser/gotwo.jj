@@ -113,6 +113,7 @@ public class LangGoTwo {
     catch (StringIndexOutOfBoundsException e) { }
     return s;
   }
+
   /**
    * Consome o token até achar um token de sincronização
    * 
@@ -120,29 +121,35 @@ public class LangGoTwo {
    * @param e   Exceção pegada pelo catch()
    * @param met Nome do não-terminal
    */
-  public void consumeUntil(RecoverySet rs, ParseException e, String met) {  
-    Token tok;
-    if (debug_recovery) {
-      System.out.println();
-      System.out.println("*** " + met + " ***");
-      System.out.println("Sincronizando: " + rs);
-    }
-
-    if (rs == null) throw e;
-
-    tok = getToken(1);
-    while (!eof) {
-      if (rs.contains(tok.kind)) {
-        if (debug_recovery) {
-          System.out.println("Encontrado token de sincronização: " + im(tok.kind));
-        }
-        break;
+  public void consumeUntil(RecoverySet rs, ParseException e, String met) throws ParseException {
+      Token tok;
+      if (debug_recovery)
+      {
+        System.out.println();
+        System.out.println("*** " + met + " ***");
+        System.out.println("Sincronizando: " + rs);
       }
-      if (debug_recovery) {
-        System.out.println("Ignorando token: " + im(tok.kind));
-      }
-      getNextToken();
+
+      if (rs == null)
+        throw e;
+
       tok = getToken(1);
+      while (!eof)
+      {
+        if (rs.contains(tok.kind))
+        {
+          if (debug_recovery)
+          {
+            System.out.println("Encontrado token de sincronização: " + im(tok.kind));
+          }
+          break;
+        }
+        if (debug_recovery)
+        {
+          System.out.println("Ignorando token: " + im(tok.kind));
+        }
+        getNextToken();
+        tok = getToken(1);
         // System.out.println("TOK.KIND = " + im(tok.kind));
       if (tok.kind == EOF && !rs.contains(EOF)) eof = true;
     }
@@ -808,14 +815,16 @@ SPECIAL_TOKEN:
     "\f"
   ] )+ >
   {
-    System.err.println("Linha " + input_stream.getEndLine() + 
-                        " - String inválida encontrada: " + image);
+    System.out.println("Erro Léxico: ")
+    System.out.println("linha " + input_stream.getEndLine() + ", coluna " + input_stream.getEndColumn() +
+                        " - Token inválido encontrado: " + image);
     countLexErros++;
   }
 
 |   <INVALID_CONST: "\"" ( ~["\n", "\r", "\""] )* ["\n", "\r"] >
   {
-    System.err.println("Linha " + input_stream.getEndLine() + 
+    System.out.println("Erro Léxico: ")
+    System.out.println("linha " + input_stream.getEndLine() + ", coluna " + input_stream.getEndColumn() +
                         " - Constante String tem um \\n: " + image);
     countLexErros++;
   }
