@@ -13,7 +13,11 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 
 ## Expressões Regulares
 
+<<<<<<< HEAD
 ```go
+=======
+```java
+>>>>>>> parent of 6f63ffe... Atualizando a linguagem target para xml
 //Aceita uma cadeia para representar um inteiro de um ou mais dígitos
 <INTEGER_LITERAL>: (<DIGIT>)+
 
@@ -51,7 +55,11 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 
 ## Gramática
 
+<<<<<<< HEAD
 ```go
+=======
+```java
+>>>>>>> parent of 6f63ffe... Atualizando a linguagem target para xml
 <identifier> = <IDENT> ;
 
 <program> = 'package', <identifier>, ";", 
