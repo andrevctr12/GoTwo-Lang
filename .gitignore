@@ -9,3 +9,4 @@ BNF
 *.jj.jj
 .idea
 *.html
+!/parser/NotSoSimpleNode.java
