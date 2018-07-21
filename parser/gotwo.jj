@@ -1,15 +1,31 @@
+/**
+ * @author André Victor Teixeira Lopes
+ * @author Bruno de Castro Brezolin
+ * @author Melissa Wong
+ */
+
 options {
+  //Opção necessária para debugar o parser
   DEBUG_LOOKAHEAD = true;
+  //Codigo da classe não estático
   STATIC = false;
+  //Alteração do nó da arvore para um nó criado pelo usuário
   NODE_CLASS = "NotSoSimpleNode";
 }
 
+/**
+ * Inicio do código principal do Parser
+ * (Nome da Classe principal)
+ */
 PARSER_BEGIN(LangGoTwo)
 package parser;
 
 import java.io.*;
 import recovery.*;
 
+/**
+ * Classe principal da Linguagem LangGoTwo
+ */
 public class LangGoTwo {
   final static String Version = "GoTwo Compiler - Version 0.1 - 2018";
   private boolean MenosShort = false;
@@ -18,6 +34,11 @@ public class LangGoTwo {
   private boolean eof = false;
   private Token lastError = null;
   
+  /**
+   * Método Principal
+   * 
+   * @param args  Argumentos de entrada do programa principal
+   */
   public static void main(String[] args) {
     String filename = "";
     LangGoTwo parser;
@@ -28,9 +49,11 @@ public class LangGoTwo {
 
     int i;
     for (i = 0; i < args.length - 1; i++) {
+      // Verificando argumentos de debug
       if (args[i].equals("-debug_AS") || args[i].toLowerCase().equals("-d")) {
         debug_AS = true;
       }
+      // Verificando argumentos de debug
       if (args[i].equals("-debug_recovery") || args[i].toLowerCase().equals("-d")) {
         debug_recovery = true;
       }
@@ -55,16 +78,18 @@ public class LangGoTwo {
         return;
       }
     } 
+    // Ativa ou desativa os debugs
     if (!debug_AS) parser.disable_tracing();
     parser.debug_recovery = debug_recovery;
+
     try {
+      // Arvore Sintática recebe a chamada recursiva
       NotSoSimpleNode root = parser.program();
+      // Imprime a árvore no terminal
       root.dump("");
-      //System.out.println("GoTwo analizado com sucesso.");
     }
     catch (ParseException e) {
       System.err.println(e.getMessage());
-      //parser.countParseError = 1; //Não existe recuperação de erros
     }
     finally {
       System.out.println(parser.token_source.foundLexError() + " erro(s) Léxicos encontrados.");
@@ -73,6 +98,11 @@ public class LangGoTwo {
 
   }
 
+  /**
+   * Auxilia a imprimir o token certo
+   * 
+   * @param x numero do token no JavaCC
+   */
   static public String im(int x) {
     int k;
     String s;
@@ -84,54 +114,60 @@ public class LangGoTwo {
     catch (StringIndexOutOfBoundsException e) { }
     return s;
   }
+  /**
+   * Consome o token até achar um token de sincronização
+   * 
+   * @param rs  Tokens de sincronização
+   * @param e   Exceção pegada pelo catch()
+   * @param met Nome do não-terminal
+   */
+  public void consumeUntil(RecoverySet rs, ParseException e, String met) {  
+    Token tok;
+    if (debug_recovery) {
+      System.out.println();
+      System.out.println("*** " + met + " ***");
+      System.out.println("Sincronizando: " + rs);
+    }
+
+    if (rs == null) throw e;
+
+    tok = getToken(1);
+    while (!eof) {
+      if (rs.contains(tok.kind)) {
+        if (debug_recovery) {
+          System.out.println("Encontrado token de sincronização: " + im(tok.kind));
+        }
+        break;
+      }
+      if (debug_recovery) {
+        System.out.println("Ignorando token: " + im(tok.kind));
+      }
+      getNextToken();
+      tok = getToken(1);
+        // System.out.println("TOK.KIND = " + im(tok.kind));
+      if (tok.kind == EOF && !rs.contains(EOF)) eof = true;
+    }
+
+    if (tok != lastError) {
+      System.out.println(e.getMessage());
+      lastError = tok;
+      countParseError++;
+    }
+    if (eof) {
+      throw new ParseException("EOF encontrado antes do fim do arquivo.");
+    }
+  }
 
 } //LangGoTwo
 
 PARSER_END(LangGoTwo)
 
-JAVACODE
 /**
- * Função para consumir tokens até um token de sincronização ser encontrado
+ * Método que inicia a analise sintática, primeiro não terminal da Linguagem, 
+ * com tratamento de erro sintático
  * 
+ * @return NotSoSimpleNode arvore sintática construida por jjtree
  */
-
-public void consumeUntil(RecoverySet rs, ParseException e, String met) #void {  
-  Token tok;
-  if (debug_recovery) {
-    System.out.println();
-    System.out.println("*** " + met + " ***");
-    System.out.println("Sincronizando: " + rs);
-  }
-
-  if (rs == null) throw e;
-
-  tok = getToken(1);
-  while (!eof) {
-    if (rs.contains(tok.kind)) {
-      if (debug_recovery) {
-        System.out.println("Encontrado token de sincronização: " + im(tok.kind));
-      }
-      break;
-    }
-    if (debug_recovery) {
-      System.out.println("Ignorando token: " + im(tok.kind));
-    }
-    getNextToken();
-    tok = getToken(1);
-      // System.out.println("TOK.KIND = " + im(tok.kind));
-    if (tok.kind == EOF && !rs.contains(EOF)) eof = true;
-  }
-
-  if (tok != lastError) {
-    System.out.println(e.getMessage());
-    lastError = tok;
-    countParseError++;
-  }
-  if (eof) {
-    throw new ParseException("EOF encontrado antes do fim do arquivo.");
-  }
-}
-
 NotSoSimpleNode program(): { 
   RecoverySet g = First.program,
               f1 = new RecoverySet(SEMICOLON);
@@ -150,6 +186,11 @@ NotSoSimpleNode program(): {
   )
 }
 
+/**
+ * Não-terminal de tipos da linguagem, com tratamento de erro sintático
+ * 
+ * @param g Tokens de sincronização
+ */
 void type(RecoverySet g): { Token t; }
 {
   try {
@@ -161,6 +202,11 @@ void type(RecoverySet g): { Token t; }
   }
 }
 
+/**
+ * Não-terminal de declaração de import, com tratamento de erro sintático
+ * 
+ * @param g Tokens de sincronização
+ */
 void importDecl(RecoverySet g): { 
   RecoverySet f1 = new RecoverySet(RPAREN),
               f2 = First.importSpec.union(g);
