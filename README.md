@@ -11,6 +11,21 @@ completa.
 
 Por: André Lopes, Bruno Brezolin e Melissa Wong
 
+## Instruções de Compilação
+
+```bash
+# Sete as variaveis do javacc para serem acessadas pelo terminal
+# Entre na pasta do projeto
+$ cd parser/
+$ jjtree gotwo.jj
+$ javacc gotwo.jj.jj
+#Volte para a pasta do projeto e compile com JavaC
+$ cd ..   
+$ javac parser/LangGoTwo.java
+# Entre com o codigo da GoTwo Lang
+$ java parser/example.go2
+```
+
 ## Expressões Regulares
 
 ```xml
