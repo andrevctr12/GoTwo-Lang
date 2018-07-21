@@ -13,7 +13,7 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 
 ## Expressões Regulares
 
-```java
+```xml
 //Aceita uma cadeia para representar um inteiro de um ou mais dígitos
 <INTEGER_LITERAL>: (<DIGIT>)+
 
@@ -51,7 +51,7 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 
 ## Gramática
 
-```java
+```xml
 <identifier> = <IDENT> ;
 
 <program> = 'package', <identifier>, ";", 
