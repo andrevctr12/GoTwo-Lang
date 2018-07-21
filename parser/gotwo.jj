@@ -27,12 +27,11 @@ import recovery.*;
  * Classe principal da Linguagem LangGoTwo
  */
 public class LangGoTwo {
-  final static String Version = "GoTwo Compiler - Version 0.1 - 2018";
-  private boolean MenosShort = false;
-  private int countParseError = 0;
-  private boolean debug_recovery = false;
-  private boolean eof = false;
-  private Token lastError = null;
+  final static String Version = "GoTwo Compiler - Version 0.1 - 2018"; //String de versão da linguagem mostrada pelo compilador
+  private int countParseError = 0; //Contador de erros do parser do compilador
+  private boolean debug_recovery = false; //Indica modo de debug
+  private boolean eof = false; //Indica se foi alcançado o fim do arquivo
+  private Token lastError = null; //Indica o token em que ocorreu o último erro
   
   /**
    * Método Principal
@@ -57,17 +56,17 @@ public class LangGoTwo {
       if (args[i].equals("-debug_recovery") || args[i].toLowerCase().equals("-d")) {
         debug_recovery = true;
       }
-      else {
+      else { // Em caso de invocação incorreta do comando
         System.out.println("Uso correto: java LangGoTwo [-debug_AS], [-debug_recovery] ou [-d] inputfile");
         System.exit(0);
       }
     }
 
-    if (args[i].equals('-')) { //entrada padrão
+    if (args[i].equals('-')) { // Lê o programa a partir da entrada padrão
       System.out.println("Lendo da entrada padrão . . .");
       parser = new LangGoTwo(System.in);
     } 
-    else {
+    else { // Lê o programa a partir de arquivo
       filename = args[args.length - 1];
       System.out.println("Lendo do arquivo " + filename + " . . .");
       try {
@@ -221,6 +220,9 @@ void importDecl(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal
+ */
 void importSpec(RecoverySet g): { Token t; 
   RecoverySet f = new RecoverySet(STRING_LITERAL);
 }
@@ -234,6 +236,11 @@ void importSpec(RecoverySet g): { Token t;
   }
 }
 
+/**
+ *  Não-terminal da lista de funções
+ *
+ * @param g Tokens de sincronização
+ */
 void funcList(RecoverySet g): {
   RecoverySet f = First.funcList.union(g);
 }
@@ -243,6 +250,11 @@ void funcList(RecoverySet g): {
   )
 }
 
+/**
+ * Não-terminal de declaração de função, com tratamento de erro sintático
+ *
+ * @param g Tokens de sincronização
+ */
 void funcDecl(RecoverySet g): { 
   RecoverySet f = First.funcBody;
 }
@@ -255,6 +267,11 @@ void funcDecl(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal de corpo de função, com tratamento de erro sintático
+ *
+ * @param g Tokens de sincronização
+ */
 void funcBody(RecoverySet g): {
   RecoverySet f1 = new RecoverySet(RPAREN).union(g), 
               f2 = First.paramList.union(f1).remove(IDENT),
@@ -269,6 +286,11 @@ void funcBody(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal da especificação de retorno de uma função, com tratamento de erro sintático
+ *
+ * @param g Tokens de sincronização
+ */
 void funcReturnBody(RecoverySet g): {
   RecoverySet f1 = new RecoverySet(RPAREN).union(g),
               f2 = First.returnList.union(f1);
@@ -283,6 +305,11 @@ void funcReturnBody(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal de lista de retorno de uma função, com tratamento de erro sintático
+ *
+ * @param g Tokens de sincronização
+ */
 void returnList(RecoverySet g): { 
   RecoverySet f1 = new RecoverySet(COMMA).union(g),
               f2 = First.type.union(f1);
@@ -296,6 +323,11 @@ void returnList(RecoverySet g): {
   }
 }
 
+/**
+ *  Não-terminal da lista de parâmetros de uma função, com tratamento de erro sintático
+ *
+ * @param g Tokens de sincronização
+ */
 void paramList(RecoverySet g): { 
   RecoverySet f = First.paramLType;
 }
@@ -308,6 +340,11 @@ void paramList(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal que representa o tipo de um parâmetro de uma função, com tratamento de erro sintático
+ *
+ * @param g Tokens de sincronização
+ */
 void paramLType(RecoverySet g): { 
   RecoverySet f = new RecoverySet(COMMA).union(g),
               f1 = First.type.union(f);
@@ -322,6 +359,11 @@ void paramLType(RecoverySet g): {
   }
 }
 
+/**
+ * Não terminal que representa uma declaração de variável, com tratamento de erro sintático
+ *
+ * @param g Tokens de sincronização
+ */
 void varDecl(RecoverySet g): { 
   RecoverySet f = new RecoverySet(COMMA).union(g),
               f1 = First.type.union(f);
@@ -335,6 +377,11 @@ void varDecl(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal que representa uma declaração de variável constante, com tratamento de erro sintático
+ *
+ * @param g Tokens de sincronização
+ */
 void constDecl(RecoverySet g): { 
   RecoverySet f1 = First.type.union(g);
 }
@@ -347,6 +394,11 @@ void constDecl(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal que rerpesenta uma expressão da linguagem, com tratamento de erro sintático
+ *
+ * @param g Tokens de sincronização
+ */
 void statement(RecoverySet g): { 
   RecoverySet f1 = new RecoverySet(SEMICOLON).union(g).remove(IDENT),
               f2 = new RecoverySet(RBRACE);
@@ -369,6 +421,11 @@ void statement(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal que define uma lista de expressões, com tratamento de erro sintático
+ *
+ * @params g Tokens de sincronização
+ */
 void statList(RecoverySet g): { 
   RecoverySet f = First.statList.union(g);
 }
@@ -381,6 +438,11 @@ void statList(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal que representa expressão de atribuição para uma variável, com tratamento de erro sintático
+ *
+ * @params g Tokens de sincronização
+ */
 void atribStat(RecoverySet g): { 
   RecoverySet f1 = new RecoverySet(ASSIGN).union(g),
               f2 = new RecoverySet(ASSINGTYPED).union(f1),
@@ -395,6 +457,11 @@ void atribStat(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal que representa o valor que vai ser atribuido a uma variável, com tratamento de erro sintático
+ *
+ * @params g Tokens de sincronização
+ */
 void assignValue(RecoverySet g): { Token t; }
 {
   try {
@@ -406,6 +473,11 @@ void assignValue(RecoverySet g): { Token t; }
   }
 }
 
+/**
+ * Não-terminal que representa expressão de retorno de uma função, com tratamento de erro sintático
+ *
+ * @params g Tokens de sincronização
+ */
 void returnStat(RecoverySet g): {
   RecoverySet f1 = new RecoverySet(COMMA).union(g);
 }
@@ -418,6 +490,11 @@ void returnStat(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal que representa expressão de desvio condicinal "if", com tratamento de erro sintático
+ *
+ * @params g Tokens de sincronização
+ */
 void ifStat(RecoverySet g): { 
   RecoverySet f1 = new RecoverySet(RPAREN),
               f2 = new RecoverySet(ELSE).union(g);
@@ -432,6 +509,11 @@ void ifStat(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal que representa expressão de repetição "for", com tratamento de erro sintático
+ *
+ * @params g Tokens de sincronização
+ */
 void forStat(RecoverySet g): { 
   RecoverySet f1 = new RecoverySet(SEMICOLON),
               f2 = new RecoverySet(RPAREN);
@@ -448,6 +530,11 @@ void forStat(RecoverySet g): {
   }
 }
 
+/**
+ * Não-terminal que representa uma variável que vai receber uma atribuição, com tratamento de erro sintático
+ *
+ * @params g Tokens de sincronização
+ */
 void lvalue(RecoverySet g): { } 
 {
   try {
@@ -462,6 +549,11 @@ void lvalue(RecoverySet g): { }
   }
 }
 
+/**
+ * Não-terminal que representa uma expressão da linguagem, com tratamento de erro sintático
+ *
+ * @params g Tokens de sincronização
+ */
 void expression(RecoverySet g): { }
 {
   try {
@@ -472,27 +564,52 @@ void expression(RecoverySet g): { }
   }
 }
 
+/**
+ * Não-terminal que representa um operador
+ *
+ * @params g Tokens de sincronização
+ */
 void operator(): { Token t; }
 {
   ( t = <LT> | t = <GT> | t = <LE> | t = <GE> | t = <EQ> | t = <NEQ> )
   { jjtThis.value = t.image; }
 }
 
+/**
+ * Não-terminal que representa uma expressão numérica
+ *
+ * @params g Tokens de sincronização
+ */
 void numexpr(): { }
 {
   term() (( <PLUS> | <MINUS> ) term())*
 }
 
+/**
+ * Não-terminal que representa um termo de uma expressão numérica
+ *
+ * @params g Tokens de sincronização
+ */
 void term(): { }
 {
   unaryexpr() (( <STAR> | <SLASH> | <REM> ) unaryexpr())*
 }
 
+/**
+ * Não-terminal que representa uma expressão unária
+ *
+ * @params g Tokens de sincronização
+ */
 void unaryexpr(): { }
 {
   [(<PLUS> | <MINUS>)] factor()
 }
 
+/**
+ * Não-terminal que representa parte de uma expressão
+ *
+ * @params g Tokens de sincronização
+ */
 void factor(): { Token t = null; }
 {
   (
@@ -506,6 +623,11 @@ void factor(): { Token t = null; }
   { if (t != null) jjtThis.value = t.image; }
 }
 
+/**
+ * Não-terminal que representa uma lista de argumentos de uma função
+ *
+ * @params g Tokens de sincronização
+ */
 void argList(RecoverySet g): { 
   RecoverySet f = new RecoverySet(COMMA).union(g);
 }
@@ -513,6 +635,11 @@ void argList(RecoverySet g): {
   [ expression(f) ( <COMMA> expression(f) )* ]
 }
 
+/**
+ * Não-terminal que representa um identificador
+ *
+ * @params g Tokens de sincronização
+ */
 void ident(RecoverySet g): { Token t; }
 {
   try {

@@ -52,96 +52,69 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 ## Gramática
 
 ```xml
-
-<!--Simbolo inicial da linguagem, com o package, a lista de imports (opcional) e a lista de funções, respectivamente-->
 <program> = 'package', <IDENT>, ';', 
           ['import', <importDecl>, ';'],
           <functionList>, EOF;
 
-<!--Declaração de imports-->
 <importDecl> = (importSpec)+ 
 |  "(", importSpec, ")" ;
 
-<!--Especificação de um import-->
 <importSpec> = [ ( "." | <IDENT> ) ], <STRING_LITERAL>
 
-<!--Lista de funções-->
 <funcList> = (<funcDecl>, [<funcList>]) ;
 
-<!--Declaração de funções-->
 <funcDecl> = 'func', <IDENT>, <funcBody> ;
 
-<!--Corpo de uma função-->
 <funcBody> = '(', (<paramList>)*, ')', 
             [ <funcReturnBody> ] <statement> ;
 
-<!--Especificação do retorno de uma função-->
 <funcReturnBody> =  ('(', (<returnList>)* ')' 
 |   <type>) ;
 
-<!--Lista de retorno-->
 <returnList> = [ <IDENT> ] <type> (',' [ <IDENT> ] <type>)* ;
 
-<!--Lista de parâmetros-->
 <paramList> = <IDENT>, <paramLType> ;
 
-<!--Lista de tipos de parâmetros-->
 <paramLType> = <type>, (',', <IDENT>, <type>)*
 |   (',', <IDENT>)* <type> ;
 
-<!--Declaração de variáveis-->
 <varDecl> = 'var', <IDENT>, (',', <IDENT>)*, [<type>] ;
 
-<!--Declaração de constantes-->
 <constDecl> = 'const', <IDENT>, [<type>] ;
 
-<!--Lista de statements-->
 <statList> = [<statement>, <statList>] ;
 
-<!--Atribuição-->
 <atribStat> = <lvalue>, [('=' | ':='), <expression>] ;
 
-<!--Return-->
 <returnStat> = 'return', [<expression>, (',', <expression>)*] ;
 
-<!--If statement-->
 <ifStat> = 'if', '(', <expression>, ')', <statement>, ['else', <statement>] ;
 
-<!--For statement-->
 <forStat> = 'for', [ '(', [<atribStat>], ';',
                       [<expression>], ';',
                       [<atribStat>], ')' ],
                       <statement> ;
 
-<!--Especificação de variável que recebe uma atribuição-->            
 <lvalue> = <IDENT>, ['(', <argList>], ')'], 
           ('[', <expression>, ']' 
 |         '.', <IDENT>, ['(', <argList>, ')']) ;
 
-<!--Expressão-->
 <expression> = <numexpr>, [(<comparison>) <numexpr>] ;
 
-<!--Expressão numérica-->
 <numexpr> = <term>, (('+' | '-'), <term>)* ;
 
-<!--Termo de uma expressão numérica-->
 <term> = <unaryexpr>, (( '*' | '/' | '%'), <unaryexpr>)* ;
 
-<!--Expressão unária-->
 <unaryexpr> = [('+' | '-')], <factor> ;
 
-<!--Fatores-->
 <factor> = <INTEGER_LITERAL> | <STRING_LITERAL> | 
            <NULL_LITERAL> | <FLOATING_POINT_LITERAL> | <lvalue> | 
            '(', <expression>, ')' ;
 
-<!--Lista de argumentos-->
 <argList> = [<expression> (',', <expression>)*] ;
 
-<!--Símbolos de comparação-->
 <comparison> = '>' | '<' | '==' | '<=' | '>=' | '!=' ;
 
-<!--Statements-->
 <statement> = <funcDecl>
   | <varDecl>, ';'
   | <constDecl>, ';'
@@ -153,7 +126,6 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
   | 'break', ';'
   | ';' ;
 
-<!--Tipos-->
 <type> = 'int' | <STRING_LITERAL> | 'bool' | 'float' | 'byte' | 'rune' ;
 ```
 
