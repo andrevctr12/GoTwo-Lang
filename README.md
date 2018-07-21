@@ -13,45 +13,45 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
 
 ## Expressões Regulares
 
-```xml
+```go
 //Aceita uma cadeia para representar um inteiro de um ou mais dígitos
 <INTEGER_LITERAL>: (<DIGIT>)+
 
-//Aceita uma cadeia que comece com ", porém a cadeia entre o início e o final não deve conter ", \n ou \r
-<STRING_LITERAL>: "\"" ( ~["\"","\n","\r"])* "\""
+//Aceita uma cadeia que comece e termine com ", porém a cadeia entre o início e o final não deve conter ", \n ou \r
+<STRING_LITERAL>: '\"' ( ~['\"','\n','\r'])* '\"'
 
 //Nulo
-<NULL_LITERAL>: "nil"
+<NULL_LITERAL>: 'nil'
 
 //Aceita diversas representações de ponto flutuante, incluindo com expoente
 <FLOATING_POINT_LITERAL>:
-    (<DIGIT>)+ "." (<DIGIT>)* (<EXPONENT>)? (["f","F","d","D"])?  
-    |   "." (<DIGIT>)+ (<EXPONENT>)? (["f","F","d","D"])?  
-    |   (<DIGIT>)+ <EXPONENT> (["f","F","d","D"])?  
-    |   (<DIGIT>)+ (<EXPONENT>)? ["f","F","d","D"] 
+    (<DIGIT>)+ '.' (<DIGIT>)* (<EXPONENT>)? (['f','F','d','D'])?  
+    |   '.' (<DIGIT>)+ (<EXPONENT>)? (['f','F','d','D'])?  
+    |   (<DIGIT>)+ <EXPONENT> (['f','F','d','D'])?  
+    |   (<DIGIT>)+ (<EXPONENT>)? ['f','F','d','D'] 
 
 //Aceita um expoente positivo ou negativo de um ou mais dígitos 
-<EXPONENT>: ["e","E"] (["+","-"])? (<DIGIT>)+
+<EXPONENT>: ['e','E'] (['+','-'])? (<DIGIT>)+
 
 //Aceita uma cadeia para representar uma variável, deve ser iniciada com uma letra e então seguida por uma ou mais letras, dígitos ou '_'
-<IDENT>: (<LETTER>) (<LETTER>|<DIGIT>|"_")*
+<IDENT>: (<LETTER>) (<LETTER>|<DIGIT>|'_')*
 
 //Aceita uma letra minúscula ou maiúscula
 <LETTER>: ( <LOWERLETTER> | <UPPERLETTER> ) >
 
 //Aceita uma letra minúscula entre 'a' e 'z'
-<LOWERLETTER>: ["a"-"z"]
+<LOWERLETTER>: ['a'-'z']
 
 //Aceita uma letra maiúscula entre 'A' e 'Z'
-<UPPERLETTER>: ["A"-"Z"]
+<UPPERLETTER>: ['A'-'Z']
 
 //Aceita um dígito entre '0' e '9'
-<DIGIT>: ["0"-"9"]
+<DIGIT>: ['0'-'9']
 ```
 
 ## Gramática
 
-```xml
+```go
 <identifier> = <IDENT> ;
 
 <program> = 'package', <identifier>, ";", 
@@ -59,74 +59,75 @@ Por: André Victor, Bruno Brezolin e Melissa Wong
           <functionList>, EOF;
 
 
-<importDecl> = ( [( "." | <identifier> )] <STRING_LITERAL> )+ 
-| "(", [( "." | <identifier> )], <STRING_LITERAL>, ")", ";"] ;
+<importDecl> = ( [( '.' | <identifier> )] <STRING_LITERAL> )+ 
+| '(', [( '.' | <identifier> )], <STRING_LITERAL>, ')', ';'] ;
 
 <funcList> = (<funcDecl>, [<funcList>]) ;
 
 <funcDecl> = 'func', <identifier>, <funcBody> ;
 
-<funcBody> = "(", (<paramList>)*, ")", 
+<funcBody> = '(', (<paramList>)*, ')', 
             [ <funcReturnBody> ] <statement> ;
 
-<funcReturnBody> =  ("(", (<returnList>)* ")" 
+<funcReturnBody> =  ('(', (<returnList>)* ')' 
 |   <type>) ;
 
-<returnList> = [ <identifier> ] <type> ("," [ <identifier> ] <type>)* ;
+<returnList> = [ <identifier> ] <type> (',' [ <identifier> ] <type>)* ;
 
 <paramList> = <identifier>, <paramLType> ;
 
-<paramLType> = <type>, (",", <identifier>, <type>)*
-|   (",", <identifier>)* <type> ;
+<paramLType> = <type>, (',', <identifier>, <type>)*
+|   (',', <identifier>)* <type> ;
 
-<varDecl> = 'var', <identifier>, (",", <identifier>)*, [<type>] ;
+<varDecl> = 'var', <identifier>, (',', <identifier>)*, [<type>] ;
 
 <constDecl> = 'const', <identifier>, [<type>] ;
 
 <statList> = [<statement>, <statList>] ;
 
-<atribStat> = <lvalue>, [("=" | ":="), <expression>] ;
+<atribStat> = <lvalue>, [('=' | ':='), <expression>] ;
 
-<returnStat> = 'return', [<expression>, (",", <expression>)*] ;
+<returnStat> = 'return', [<expression>, (',', <expression>)*] ;
 
-<ifStat> = 'if', '(', <expression>, ")", <statement>, ['else', <statement>] ;
+<ifStat> = 'if', '(', <expression>, ')', <statement>, ['else', <statement>] ;
 
-<forStat> = 'for', [ "(", [<atribStat>], ";",
-                      [<expression>], ";",
-                      [<atribStat>], ")" ],
+<forStat> = 'for', [ '(', [<atribStat>], ';',
+                      [<expression>], ';',
+                      [<atribStat>], ')' ],
                       <statement> ;
             
-<lvalue> = <identifier>, ["(", <argList>], ")"], 
-          ("[", <expression>, "]" 
-|         ".", <identifier>, ["(", <argList>, ")"]) ;
+<lvalue> = <identifier>, ['(', <argList>], ')'], 
+          ('[', <expression>, ']' 
+|         '.', <identifier>, ['(', <argList>, ')']) ;
 
 <expression> = <numexpr>, [(<comparison>) <numexpr>] ;
 
-<numexpr> = <term>, (("+" | "-"), <term>)* ;
+<numexpr> = <term>, (('+' | '-'), <term>)* ;
 
-<term> = <unaryexpr>, (( "*" | "/" | "%"), <unaryexpr>)* ;
+<term> = <unaryexpr>, (( '*' | '/' | '%'), <unaryexpr>)* ;
 
-<unaryexpr> = [("+" | "-")], <factor> ;
+<unaryexpr> = [('+' | '-')], <factor> ;
 
 <factor> = <INTEGER_LITERAL> | <STRING_LITERAL> | 
-           <NULL_LITERAL> | <FLOATING_POINT_LITERAL> | <lvalue> | "(", <expression>, ")" ;
+           <NULL_LITERAL> | <FLOATING_POINT_LITERAL> | <lvalue> | 
+           '(', <expression>, ')' ;
 
-<argList> = [<expression> (",", <expression>)*] ;
+<argList> = [<expression> (',', <expression>)*] ;
 
-<comparison> = ">" | "<" | "==" | "<=" | ">=" | "!=" ;
+<comparison> = '>' | '<' | '==' | '<=' | '>=' | '!=' ;
 
 <statement> = <funcDecl>
-  | <varDecl>, ";"
-  | <constDecl>, ";"
-  | <atribStat>, ";"
-  | <returnStat>, ";"
+  | <varDecl>, ';'
+  | <constDecl>, ';'
+  | <atribStat>, ';'
+  | <returnStat>, ';'
   | <ifStat>
   | <forStat>
-  | <LBRACE> <statList>(f2) <RBRACE>
-  | <BREAK>, ";"
-  | ";" ;
+  | '{' <statList> '}'
+  | 'break', ';'
+  | ';' ;
 
-<type> = "int" | <STRING_LITERAL> | "bool" | "float" | "byte" | "rune" ;
+<type> = 'int' | <STRING_LITERAL> | 'bool' | 'float' | 'byte' | 'rune' ;
 ```
 
 ## Requisitos
