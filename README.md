@@ -108,8 +108,8 @@ $ java parser/LangGoTwo [-d] [-debug_recovery] [-debug_AS] example.go2
                       [<atribStat>], ')' ],
                       <statement> ;
             
-<lvalue> = <identifier>, ['(', <argList>], ')'], ('[', <expression>, ']' |
-          '.', <identifier>, ['(', <argList>, ')']) ;
+<lvalue> = <IDENT>, ['(', <argList>], ')'], ('[', <expression>, ']' |
+          '.', <IDENT>, ['(', <argList>, ')']) ;
 
 <expression> = <numexpr>, [(<comparison>) <numexpr>] ;
 
@@ -138,7 +138,7 @@ $ java parser/LangGoTwo [-d] [-debug_recovery] [-debug_AS] example.go2
   | 'break', ';'
   | ';' ;
 
-<type> = 'int' | <STRING_LITERAL> | 'bool' | 'float' | 'byte' | 'rune' ;
+<type> = 'int' | <IDENT> | 'bool' | 'float' | 'byte' | 'rune' ;
 ```
 
 ## Requisitos
